@@ -34,12 +34,14 @@ eg:
 mSimpleRefreshLayout.setOnSimpleRefreshListener(new SimpleRefreshLayout.OnSimpleRefreshListener() {
             @Override
             public void onRefresh() {
-                //下拉刷新
+                //下拉刷新完成
+                mSimpleRefreshLayout.onRefreshComplete();
             }
 
             @Override
             public void onLoadMore() {
-               //上拉加载
+               //上拉加载完成
+               mSimpleRefreshLayout.onLoadMoreComplete();
             }
         });
 ```
