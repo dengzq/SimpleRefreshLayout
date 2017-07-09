@@ -3,6 +3,7 @@
 
 
 ### demo效果
+
 ![simplerefresh.gif](http://upload-images.jianshu.io/upload_images/2355808-fa8bf83be7e732db.gif?imageMogr2/auto-orient/strip)
 
 ### 使用
