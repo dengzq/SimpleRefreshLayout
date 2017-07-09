@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:gravity="center"
+              android:paddingTop="6dp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content">
+
+    <ImageView
+        android:src="@drawable/progress_anim_frame"
+        android:id="@+id/iv_load_image"
+        android:layout_width="36dp"
+        android:layout_height="36dp"/>
+    <TextView
+        android:text="正在加载"
+        android:id="@+id/tv_load_text"
+        android:layout_marginLeft="3dp"
+        android:textColor="#838685"
+        android:textSize="13sp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</LinearLayout>
