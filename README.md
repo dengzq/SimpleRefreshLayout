@@ -140,6 +140,7 @@ public interface IBottomWrapper {
 4) 显示无更多布局
 
 显示`无更多`布局，需要先配置:
+
 `mSimpleRefreshLayout.setPullUpEnable(true)`,
 `mSimpleRefreshLayout.setBottomView( your view here );`
 
