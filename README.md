@@ -3,7 +3,7 @@
 
 
 ### demo效果
-![Simplerefreshlayout](http://upload-images.jianshu.io/upload_images/2355808-a582b2070e3ec56d.gif?imageMogr2/auto-orient/strip)
+![simplerefresh.gif](http://upload-images.jianshu.io/upload_images/2355808-fa8bf83be7e732db.gif?imageMogr2/auto-orient/strip)
 
 ### 使用
 
