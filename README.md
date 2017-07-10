@@ -156,7 +156,7 @@ mSimpleRefreshLayout.setChildHeaderHeight(int val);
 mSimpleRefreshLayout.setChildFooterHeight(int val);
 mSimpleRefreshLayout.setChildBottomHeight(int val);
 ```
-2> 下拉刷新，上拉加载事件的有效高度(按个人刷新布局高度处理)
+2> 下拉刷新，上拉加载事件的有效高度(根据个人刷新布局高度处理)
 
 默认下拉有效的高度为80dp,上拉有效的高度为45dp
 
