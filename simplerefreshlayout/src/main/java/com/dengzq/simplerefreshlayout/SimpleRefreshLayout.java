@@ -265,7 +265,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (Math.abs(getScaleY()) > ignorePullRange) {
+                if (Math.abs(getScrollY()) > ignorePullRange) {
                     requestDisallowInterceptTouchEvent(true);
                 }
                 if (enable) {
@@ -303,7 +303,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 return absListView.getChildCount() > 0 && (absListView.getLastVisiblePosition() != absListView.getChildCount() - 1
                         || absListView.getChildAt(absListView.getChildCount() - 1).getBottom() > absListView.getMeasuredHeight());
             } else
-                return ViewCompat.canScrollVertically(mTarget, 1) || mTarget.getScaleY() < mTarget.getMeasuredHeight() - getMeasuredHeight();
+                return ViewCompat.canScrollVertically(mTarget, 1) || mTarget.getScrollY() < mTarget.getMeasuredHeight() - getMeasuredHeight();
         } else
             return ViewCompat.canScrollVertically(mTarget, 1);
     }
@@ -317,7 +317,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 return absListView.getChildCount() > 0 && (absListView.getChildAt(0).getTop() < absListView.getPaddingTop()
                         || absListView.getFirstVisiblePosition() > 0);
             } else
-                return ViewCompat.canScrollVertically(mTarget, -1) || mTarget.getScaleY() > 0;
+                return ViewCompat.canScrollVertically(mTarget, -1) || mTarget.getScrollY() > 0;
         } else {
             return ViewCompat.canScrollVertically(mTarget, -1);
         }
