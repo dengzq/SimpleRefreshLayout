@@ -9,8 +9,10 @@
 ### 使用
 
 #### gradle配置
+
 在项目的build.gradle依赖
-compile 'com.dengzq.widget:simplerefreshlayout:0.5.0'
+
+`compile 'com.dengzq.widget:simplerefreshlayout:0.5.0'`
 
 #### 1.布局配置
 1.在xml中作为一个viewgroup使用。 注：子布局只能有一个
