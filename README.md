@@ -182,7 +182,6 @@ mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 [我的博客](http://www.jianshu.com/p/d0f620f95cdf)
 
 </br>
-
 #### 如果你喜欢本项目，请点个✨哦~
 
 
