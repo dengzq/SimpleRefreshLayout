@@ -11,9 +11,7 @@
 #### gradle依赖
 
 ```
-
 compile 'com.dengzq.widget:simplerefreshlayout:0.5.0'
-
 ```
 
 #### 1.布局配置
