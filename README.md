@@ -4,7 +4,7 @@
 
 ### demo效果
 
-![simplerefresh.gif](http://upload-images.jianshu.io/upload_images/2355808-fa8bf83be7e732db.gif?imageMogr2/auto-orient/strip)
+![simplerefresh.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/simplerefresh.gif)
 
 ### 使用
 
@@ -34,12 +34,14 @@ eg:
 mSimpleRefreshLayout.setOnSimpleRefreshListener(new SimpleRefreshLayout.OnSimpleRefreshListener() {
             @Override
             public void onRefresh() {
-                //下拉刷新
+                //下拉刷新完成
+                mSimpleRefreshLayout.onRefreshComplete();
             }
 
             @Override
             public void onLoadMore() {
-               //上拉加载
+               //上拉加载完成
+               mSimpleRefreshLayout.onLoadMoreComplete();
             }
         });
 ```
@@ -138,6 +140,7 @@ public interface IBottomWrapper {
 4) 显示无更多布局
 
 显示`无更多`布局，需要先配置:
+
 `mSimpleRefreshLayout.setPullUpEnable(true)`,
 `mSimpleRefreshLayout.setBottomView( your view here );`
 
