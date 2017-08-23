@@ -176,9 +176,7 @@ mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 ```
 
 ### 版本更新
-* v0.6.0:增加对coordinatorLayout的适配；
-       
-         修复部分已知问题；
+* v0.6.0:增加对coordinatorLayout的适配；</br>修复部分已知问题；
 
 * v0.5.0:初始提交；
 
