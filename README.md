@@ -8,6 +8,12 @@
 
 ### 使用
 
+#### gradle依赖
+
+```
+compile 'com.dengzq.widget:simplerefreshlayout:0.5.0'
+```
+
 #### 1.布局配置
 1.在xml中作为一个viewgroup使用。 注：子布局只能有一个
 </br>
@@ -156,7 +162,7 @@ mSimpleRefreshLayout.setChildHeaderHeight(int val);
 mSimpleRefreshLayout.setChildFooterHeight(int val);
 mSimpleRefreshLayout.setChildBottomHeight(int val);
 ```
-2> 下拉刷新，上拉加载事件的有效高度(按个人刷新布局高度处理)
+2> 下拉刷新，上拉加载事件的有效高度(根据个人刷新布局高度处理)
 
 默认下拉有效的高度为80dp,上拉有效的高度为45dp
 
@@ -175,8 +181,8 @@ mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 ### 关于NestedScroll
 [我的博客](http://www.jianshu.com/p/d0f620f95cdf)
 
-</br>
-##### 如果你喜欢本项目，请点个✨哦~
+
+#### 如果你喜欢本项目，请点个✨哦~
 
 
 
