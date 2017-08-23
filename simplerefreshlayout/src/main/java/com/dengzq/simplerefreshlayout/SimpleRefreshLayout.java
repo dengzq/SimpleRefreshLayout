@@ -25,7 +25,11 @@ import android.widget.Scroller;
  * <p>作者   dengzq</p>
  * <p>时间   2017/6/22 09:52</p>
  * <p>包名   com.dengzq.dengzqtest.widgets.simple_refresh</p>
- * <p>描述   包含刷新，加载，无更多的ViewGroup</p>
+ * <p>描述   1.支持刷新，加载，无更多布局的ViewGroup
+ *          2.支持coordinatorLayout，可适配继承NestedScrollParent的父组件
+ *          3.支持listView等其他控件
+ *          4.支持加载布局自定义
+ * </p>
  */
 
 public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingParent, NestedScrollingChild {
