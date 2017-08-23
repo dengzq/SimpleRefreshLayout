@@ -8,6 +8,7 @@
 ### demo效果
 
 ![recyclerView.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/simplerefresh.gif)
+
 ![coordinatorlayout.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/coodinatorlayout.gif)
 
 ### 使用
@@ -178,6 +179,7 @@ mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 ### 版本更新
 v0.6.0:增加对coordinatorLayout的适配；
        修复部分已知问题；
+
 v0.5.0:初始提交；
 
 ### 特别感谢
