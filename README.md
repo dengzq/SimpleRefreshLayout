@@ -1,14 +1,14 @@
 # SimpleRefreshLayout
-1.支持下拉刷新，上拉加载以及无更多；
-2.支持coordinatorLayout,适配继承NestedScrollParent的父组件
-3.支持listview等其他组件
-4.支持加载布局自定义;
+* 1.支持下拉刷新，上拉加载以及无更多；
+* 2.支持coordinatorLayout,适配继承NestedScrollParent的父组件
+* 3.支持listview等其他组件
+* 4.支持加载布局自定义;
 
 
 ### demo效果
 
 ![recyclerView.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/simplerefresh.gif)
-![coordinatorlayout.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/coordinatorlayout.gif)
+![coordinatorlayout.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/coodinatorlayout.gif)
 
 ### 使用
 
