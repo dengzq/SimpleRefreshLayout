@@ -1,17 +1,21 @@
 # SimpleRefreshLayout
-支持下拉刷新，上拉加载以及无更多；支持布局自定义;
+1.支持下拉刷新，上拉加载以及无更多；
+2.支持coordinatorLayout,适配继承NestedScrollParent的父组件
+3.支持listview等其他组件
+4.支持加载布局自定义;
 
 
 ### demo效果
 
-![simplerefresh.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/simplerefresh.gif)
+![recyclerView.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/simplerefresh.gif)
+![coordinatorlayout.gif](https://github.com/dengzq/SimpleRefreshLayout/blob/master/images/coordinatorlayout.gif)
 
 ### 使用
 
 #### gradle依赖
 
 ```
-compile 'com.dengzq.widget:simplerefreshlayout:0.5.0'
+compile 'com.dengzq.widget:simplerefreshlayout:0.6.0'
 ```
 
 #### 1.布局配置
@@ -170,6 +174,11 @@ mSimpleRefreshLayout.setChildBottomHeight(int val);
 mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 ```
+
+### 版本更新
+v0.6.0:增加对coordinatorLayout的适配；
+       修复部分已知问题；
+v0.5.0:初始提交；
 
 ### 特别感谢
 [TwinklingRefreshLayout](https://github.com/lcodecorex/TwinklingRefreshLayout)
