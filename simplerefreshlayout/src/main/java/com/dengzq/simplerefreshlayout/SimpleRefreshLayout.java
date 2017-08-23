@@ -5,6 +5,10 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.annotation.Size;
+import android.support.v4.view.NestedScrollingChild;
+import android.support.v4.view.NestedScrollingChildHelper;
 import android.support.v4.view.NestedScrollingParent;
 import android.support.v4.view.NestedScrollingParentHelper;
 import android.support.v4.view.ViewCompat;
@@ -24,7 +28,7 @@ import android.widget.Scroller;
  * <p>描述   包含刷新，加载，无更多的ViewGroup</p>
  */
 
-public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingParent {
+public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingParent, NestedScrollingChild {
 
     private static final String TAG                             = "SimpleRefreshLayout";
     private static final int    MSG_PULL_UP                     = 100;
@@ -41,12 +45,16 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     private              int    childBottomHeight               = 120;
 
     private NestedScrollingParentHelper mNestedScrollingParentHelper;
+    private NestedScrollingChildHelper  mNestedScrollingChildHelper;
+
+    private final int[] mParentScrollConsumed = new int[2];
+    private final int[] mParentOffsetInWindow = new int[2];
 
     private boolean pullDownEnable = true;  //是否允许下拉刷新
     private boolean pullUpEnable   = true;  //是否允许加载更多
     private boolean enable         = true;  //是否允许视图滑动
-    private boolean showBottom;                 //是否显示无更多
-    private boolean isLastScrollComplete;       //是否上一次滑动已结束
+    private boolean showBottom;             //是否显示无更多
+    private boolean isLastScrollComplete;   //是否上一次滑动已结束
     private int     direction;
 
     private View     mTarget;
@@ -82,12 +90,15 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     }
 
     private void initView() {
-        currentState = State.PULL_DOWN_NORMAL;
+        currentState = State.PULL_DOWN_RESET;
         mNestedScrollingParentHelper = new NestedScrollingParentHelper(this);
+        mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
         mScroller = new Scroller(getContext(), new LinearInterpolator());
         effectivePullDownRange = (int) (getContext().getResources().getDisplayMetrics().density * 80);
         effectivePullUpRange = (int) (getContext().getResources().getDisplayMetrics().density * 45);
         ignorePullRange = (int) (getContext().getResources().getDisplayMetrics().density * 8);
+
+        setNestedScrollingEnabled(true);
     }
 
     @Override
@@ -235,7 +246,8 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean intercept = false;
         float   y         = ev.getY();
-        direction = y > mLastY ? SCROLL_UP : SCROLL_DOWN;
+        direction = ev.getAction() == MotionEvent.ACTION_UP || y == mLastY ?
+                SCROLL_NONE : y > mLastY ? SCROLL_UP : SCROLL_DOWN;
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 intercept = false;
@@ -323,7 +335,21 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
         }
     }
 
+    /**
+     * 拉伸状态判断
+     * <p>
+     * 上拉中或上拉抬起手指，并且在加载更多，无效
+     * 下拉中或下拉抬起手指，并且在下拉刷新，无效
+     */
+    private boolean isRefreshingOrLoading() {
+        return (direction != SCROLL_UP && currentState >= State.PULL_UP_RELEASE && currentState < State.PULL_UP_FINISH)
+                || (direction != SCROLL_DOWN && currentState >= State.PULL_DOWN_RELEASE && currentState < State.PULL_DOWN_FINISH);
+    }
+
     private void doScroll(int dy) {
+        if (!isLastScrollComplete) return;
+        if (isRefreshingOrLoading()) return;
+
         if (dy > 0) {
             //上拉加载
             if (showBottom) {
@@ -345,6 +371,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                     updateStatus(State.BOTTOM);
                 }
             } else {
+                //显示加载布局
                 if (mBottomView != null) ((View) mBottomView).setVisibility(GONE);
                 if (mFooterView != null) ((View) mFooterView).setVisibility(VISIBLE);
                 if (getScrollY() < 0) { //下拉过程中的上拉，无效上拉
@@ -391,7 +418,8 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
 
     private void onStopScroll() {
 
-        if (showBottom && getScrollY() > 0) { //显示底部布局
+        if (showBottom && getScrollY() > 0) {
+            //显示无更多布局
             updateStatus(State.BOTTOM);
             if (Math.abs(getScrollY()) != 0) {
                 mScroller.startScroll(0, getScrollY(), 0, -getScrollY());
@@ -399,18 +427,22 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 invalidate();
             }
         } else {
-            if ((Math.abs(getScrollY()) >= effectivePullDownRange) && getScrollY() < 0) {//有效的滑动距离
+            if (isRefreshingOrLoading()) return;
+            if ((Math.abs(getScrollY()) >= effectivePullDownRange) && getScrollY() < 0) {
+                //有效下拉
                 updateStatus(State.PULL_DOWN_RELEASE);
                 mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() + effectivePullDownRange));
                 mScroller.extendDuration(ANIMATION_EXTEND_DURATION);
                 invalidate();
             } else if ((Math.abs(getScrollY()) >= effectivePullUpRange) && getScrollY() > 0) {
+                //有效上拉
                 updateStatus(State.PULL_UP_RELEASE);
                 mScroller.startScroll(0, getScrollY(), 0, -(getScrollY() - effectivePullUpRange));
                 mScroller.extendDuration(ANIMATION_EXTEND_DURATION);
                 invalidate();
             } else {
-                updateStatus(State.PULL_DOWN_NORMAL);
+                //无效距离，还原
+                updateStatus(State.PULL_NORMAL);
             }
         }
     }
@@ -423,16 +455,16 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             invalidate();
         } else {
             isLastScrollComplete = true;
-            if (currentState == State.PULL_DOWN_NORMAL)
+            if (currentState == State.PULL_DOWN_RESET)
                 currentState = State.PULL_DOWN_FINISH;
-            if (currentState == State.PULL_UP_NORMAL)
+            if (currentState == State.PULL_UP_RESET)
                 currentState = State.PULL_UP_FINISH;
         }
     }
 
     private void updateStatus(int state) {
         switch (state) {
-            case State.PULL_DOWN_NORMAL:
+            case State.PULL_NORMAL:
                 pullDownReset();
                 break;
             case State.PULL_DOWN:
@@ -455,7 +487,10 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 showNoMore(false);
                 setEnable(false);
                 break;
-            case State.PULL_UP_NORMAL:
+            case State.PULL_DOWN_RESET:
+                pullDownReset();
+                break;
+            case State.PULL_UP_RESET:
                 pullUpReset();
                 break;
             case State.PULL_UP:
@@ -476,6 +511,11 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                     mRefreshListener.onLoadMore();
                 }
                 setEnable(false);
+                break;
+            case State.PULL_UP_FINISH:
+                if (mFooterView != null) {
+                    mFooterView.pullUpFinish();
+                }
                 break;
             case State.BOTTOM:
                 if (mBottomView != null) {
@@ -571,7 +611,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             mHandler.sendEmptyMessageDelayed(MSG_DOWN_RESET, 5);
             return;
         }
-        updateStatus(State.PULL_DOWN_NORMAL);
+        updateStatus(State.PULL_DOWN_RESET);
     }
 
     public void onLoadMoreComplete() {
@@ -579,7 +619,13 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             mHandler.sendEmptyMessageDelayed(MSG_UP_RESET, 5);
             return;
         }
-        updateStatus(State.PULL_UP_NORMAL);
+        updateStatus(State.PULL_UP_RESET);
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     public interface CanChildScrollUp {
@@ -622,13 +668,16 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     @Override
     public void onNestedScrollAccepted(View child, View target, int axes) {
         mNestedScrollingParentHelper.onNestedScrollAccepted(child, target, axes);
+
+        //告诉父类开始滑动
+        startNestedScroll(axes & ViewCompat.SCROLL_AXIS_VERTICAL);
     }
 
     @Override
     public void onNestedPreScroll(View target, int dx, int dy, int[] consumed) {
-        if (getScrollY() != 0) { //只有在自己滑动的情形下才进行预消耗
 
-            if (!isLastScrollComplete) return;
+        //只有在自己滑动的情形下才进行预消耗
+        if (getScrollY() != 0) {
 
             //这里相当于做了一个边界条件
             if (getScrollY() > 0 && dy < 0 && Math.abs(dy) >= Math.abs(getScrollY())) {  //上拉过程中下拉
@@ -647,34 +696,35 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             doScroll(yConsumed);
             consumed[1] = yConsumed;
         }
-    }
 
-    @Override
-    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
-        if (enable) {
-            if (!isLastScrollComplete) return;
-            if (direction == SCROLL_DOWN && !pullUpEnable) return;                  //用户不开启加载
-            if (direction == SCROLL_UP && !pullDownEnable) return;                  //用户不开启下拉
-            doScroll(dyUnconsumed);
+        //父类消耗剩余距离
+        final int[] parentConsumed = mParentScrollConsumed;
+        if (dispatchNestedPreScroll(dx - consumed[0], dy - consumed[1], parentConsumed, null)) {
+            consumed[0] += parentConsumed[0];
+            consumed[1] += parentConsumed[1];
         }
     }
 
     @Override
-    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                && super.onNestedPreFling(target, velocityX, velocityY);
-    }
+    public void onNestedScroll(View target, int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed) {
 
-    @Override
-    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP)
-                && super.onNestedFling(target, velocityX, velocityY, consumed);
+        dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, mParentOffsetInWindow);
+
+        int dy = dyUnconsumed + mParentOffsetInWindow[1];
+
+        if (enable) {
+            if (direction == SCROLL_DOWN && !pullUpEnable) return;                  //用户不开启加载
+            if (direction == SCROLL_UP && !pullDownEnable) return;                  //用户不开启下拉
+            doScroll(dy);
+        }
     }
 
     @Override
     public void onStopNestedScroll(View child) {
         onStopScroll();
         mNestedScrollingParentHelper.onStopNestedScroll(child);
+
+        stopNestedScroll();
     }
 
     @Override
@@ -682,17 +732,79 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
         return mNestedScrollingParentHelper.getNestedScrollAxes();
     }
 
+    //------------------------------ NestedScrollChild ---------------------//
+
+
+    @Override
+    public void setNestedScrollingEnabled(boolean enabled) {
+        mNestedScrollingChildHelper.setNestedScrollingEnabled(enabled);
+    }
+
+    @Override
+    public boolean isNestedScrollingEnabled() {
+        return mNestedScrollingChildHelper.isNestedScrollingEnabled();
+    }
+
+    @Override
+    public boolean startNestedScroll(int axes) {
+        return mNestedScrollingChildHelper.startNestedScroll(axes);
+    }
+
+    @Override
+    public void stopNestedScroll() {
+        mNestedScrollingChildHelper.stopNestedScroll();
+    }
+
+    @Override
+    public boolean hasNestedScrollingParent() {
+        return mNestedScrollingChildHelper.hasNestedScrollingParent();
+    }
+
+    @Override
+    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, @Nullable @Size(value = 2) int[] offsetInWindow) {
+        return mNestedScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean dispatchNestedPreScroll(int dx, int dy, @Nullable @Size(value = 2) int[] consumed, @Nullable @Size(value = 2) int[] offsetInWindow) {
+        return mNestedScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
+    }
+
+    @Override
+    public boolean onNestedPreFling(View target, float velocityX, float velocityY) {
+        return dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    @Override
+    public boolean onNestedFling(View target, float velocityX, float velocityY, boolean consumed) {
+        return dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    @Override
+    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
+        return mNestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    @Override
+    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
+        return mNestedScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
+    }
+
+    //-------------------------------- 状态 --------------------------------//
+
     private interface State {
-        int PULL_DOWN_NORMAL     = 0;  //下拉恢复正常或正常
+
+        int PULL_NORMAL          = 0;  //普通状态
         int PULL_DOWN            = 1;  //下拉中
         int PULL_DOWN_RELEASABLE = 2;  //下拉可刷新
         int PULL_DOWN_RELEASE    = 3;  //下拉正在刷新
-        int PULL_DOWN_FINISH     = 4;  //下拉完成
-        int PULL_UP_NORMAL       = 5;  //上拉恢复正常
+        int PULL_DOWN_RESET      = 4;  //下拉恢复正常
+        int PULL_DOWN_FINISH     = 5;  //下拉完成
         int PULL_UP              = 6;  //上拉中
         int PULL_UP_RELEASABLE   = 7;  //上拉可刷新
-        int PULL_UP_RELEASE      = 9;  //上拉正在刷新
-        int PULL_UP_FINISH       = 9;  //上拉完成
-        int BOTTOM               = 10; //无更多
+        int PULL_UP_RELEASE      = 8;  //上拉正在刷新
+        int PULL_UP_RESET        = 9;  //上拉恢复正常
+        int PULL_UP_FINISH       = 10; //上拉完成
+        int BOTTOM               = 11; //无更多
     }
 }

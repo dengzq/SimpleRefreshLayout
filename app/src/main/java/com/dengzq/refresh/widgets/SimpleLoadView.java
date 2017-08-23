@@ -67,4 +67,10 @@ public class SimpleLoadView extends LinearLayout implements IFooterWrapper {
         AnimationDrawable drawable = (AnimationDrawable) mIvLoad.getDrawable();
         drawable.start();
     }
+
+    @Override
+    public void pullUpFinish() {
+        //do anything you want
+        //such as show a toast like "load more finish with 10 new messages"
+    }
 }

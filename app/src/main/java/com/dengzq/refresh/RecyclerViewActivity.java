@@ -19,7 +19,7 @@ import com.dengzq.simplerefreshlayout.SimpleRefreshLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class RecyclerViewActivity extends AppCompatActivity {
 
 
     RecyclerView        mRecyclerView;
@@ -45,12 +45,12 @@ public class MainActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mData.add(0, "我是刷新的数据");
+                        mData.add(0, "新加刷新数据");
                         mAdapter.notifyDataSetChanged();
                         mSimpleRefreshLayout.onRefreshComplete();
 
                     }
-                }, 1500);
+                }, 1000);
             }
 
             @Override
@@ -58,15 +58,15 @@ public class MainActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mData.add(mData.size(), "我是加载的数据");
+                        mData.add(mData.size(), "新加加载数据");
                         mAdapter.notifyDataSetChanged();
                         mSimpleRefreshLayout.onLoadMoreComplete();
 
-                        if (mData.size() >= 13) {
+                        if (mData.size() >= 18) {
                             mSimpleRefreshLayout.showNoMore(true);
                         }
                     }
-                }, 1500);
+                }, 1000);
             }
         });
 
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> mData = new ArrayList<>();
 
     private void initData() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 15; i++) {
             mData.add("第" + i + "个");
         }
     }
@@ -86,13 +86,24 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView.Adapter mAdapter = new RecyclerView.Adapter() {
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MyViewHolder(LayoutInflater.from(MainActivity.this).inflate(R.layout.item_recycler_view, parent, false));
+            return new MyViewHolder(LayoutInflater.from(RecyclerViewActivity.this).inflate(R.layout.item_recycler_view, parent, false));
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             TextView tv = (TextView) holder.itemView.findViewById(R.id.tv_text);
             tv.setText(mData.get(position));
+
+            ImageView image = (ImageView) holder.itemView.findViewById(R.id.iv_image);
+            if ("新加刷新数据".equals(mData.get(position))) {
+                image.setImageResource(R.mipmap.icon_refresh);
+                return;
+            }
+            if ("新加加载数据".equals(mData.get(position))) {
+                image.setImageResource(R.mipmap.icon_loadmore);
+                return;
+            }
+            image.setImageResource(R.mipmap.icon_avatar);
         }
 
         @Override

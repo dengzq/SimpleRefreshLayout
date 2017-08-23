@@ -33,4 +33,9 @@ public interface IFooterWrapper {
      * 上拉已释放
      */
     void pullUpRelease();
+
+    /**
+     * 加载完成
+     */
+    void pullUpFinish();
 }
