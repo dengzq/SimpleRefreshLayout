@@ -24,11 +24,14 @@ import android.widget.Scroller;
  * <p>公司   tsingning</p>
  * <p>作者   dengzq</p>
  * <p>时间   2017/6/22 09:52</p>
- * <p>包名   com.dengzq.dengzqtest.widgets.simple_refresh</p>
- * <p>描述   1.支持刷新，加载，无更多布局的ViewGroup
- *          2.支持coordinatorLayout，可适配继承NestedScrollParent的父组件
- *          3.支持listView等其他控件
- *          4.支持加载布局自定义
+ * <p>包名   com.dengzq.simplerefreshlayout</p>
+ * <p>描述   功能描述;
+ *
+ * 1.支持刷新，加载，无更多布局的ViewGroup;
+ * 2.支持coordinatorLayout，可适配继承NestedScrollParent的父组件;
+ * 3.支持listView等其他控件;
+ * 4.支持加载布局自定义;
+ *
  * </p>
  */
 
@@ -71,12 +74,17 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     private int effectivePullUpRange;
     private int ignorePullRange;
 
-    private IHeaderWrapper mHeaderView;
-    private IFooterWrapper mFooterView;
-    private IBottomWrapper mBottomView;
+    private IHeaderWrapper mHeaderWrapper;
+    private IFooterWrapper mFooterWrapper;
+    private IBottomWrapper mBottomWrapper;
+
+    private View mHeaderView;
+    private View mFooterView;
+    private View mBottomView;
 
     private int   currentState;
     private float mLastY;
+    private float mLastX;
 
     private OnSimpleRefreshListener mRefreshListener;
 
@@ -112,38 +120,101 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
 
     //设置刷新布局
     public void setHeaderView(IHeaderWrapper header) {
-        this.mHeaderView = header;
-        addView((View) mHeaderView);
+        if (header == null) return;
+        this.mHeaderWrapper = header;
+        this.mHeaderView = header.getHeaderView();
+        addView(mHeaderView);
     }
 
     public void setHeaderView(IHeaderWrapper header, int height) {
-        this.mHeaderView = header;
+        if (header == null) return;
+        this.mHeaderWrapper = header;
+        this.mHeaderView = header.getHeaderView();
         this.childHeaderHeight = height;
-        addView((View) mHeaderView);
+        addView(mHeaderWrapper.getHeaderView());
+    }
+
+    public void removeHeaderView() {
+        if (mHeaderWrapper == null) return;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == mHeaderView) {
+                removeView(mHeaderView);
+                mHeaderView = null;
+                mHeaderWrapper = null;
+                break;
+            }
+        }
     }
 
     //设置加载更多布局
     public void setFooterView(IFooterWrapper footer) {
-        this.mFooterView = footer;
-        addView((View) mFooterView);
+        if (footer == null) return;
+        this.mFooterWrapper = footer;
+        this.mFooterView = footer.getFooterView();
+        addView(mFooterView);
     }
 
     public void setFooterView(IFooterWrapper footer, int height) {
-        this.mFooterView = footer;
+        if (footer == null) return;
+        this.mFooterWrapper = footer;
+        this.mFooterView = footer.getFooterView();
         this.childFooterHeight = height;
-        addView((View) mFooterView);
+        addView(mFooterView);
+    }
+
+    public void removeFooterView() {
+        if (mFooterWrapper == null) return;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == mFooterView) {
+                removeView(mFooterView);
+                mFooterView = null;
+                mFooterWrapper = null;
+                break;
+            }
+        }
     }
 
     //设置加载完成布局
     public void setBottomView(IBottomWrapper bottom) {
-        this.mBottomView = bottom;
-        addView((View) mBottomView);
+        if (bottom == null) return;
+        this.mBottomWrapper = bottom;
+        this.mBottomView = bottom.getBottomView();
+        addView(mBottomView);
     }
 
     public void setBottomView(IBottomWrapper bottom, int height) {
-        this.mBottomView = bottom;
+        if (bottom == null) return;
+        this.mBottomWrapper = bottom;
+        this.mBottomView = bottom.getBottomView();
         this.childBottomHeight = height;
-        addView((View) mBottomView);
+        addView(mBottomView);
+    }
+
+    public void removeBottomView() {
+        if (mBottomWrapper == null) return;
+        for (int i = 0; i < getChildCount(); i++) {
+            View child = getChildAt(i);
+            if (child == mBottomView) {
+                removeView(mBottomView);
+                mBottomView = null;
+                mBottomWrapper = null;
+                break;
+            }
+        }
+    }
+
+    public IBottomWrapper getBottomView() {
+        return mBottomWrapper;
+    }
+
+    public IHeaderWrapper getHeaderView() {
+        return mHeaderWrapper;
+    }
+
+    public IFooterWrapper getFooterView() {
+        return mFooterWrapper;
     }
 
     public void showNoMore(boolean noMore) {
@@ -154,8 +225,8 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             mHandler.sendEmptyMessageDelayed(MSG_NO_MORE, 5);
             return;
         }
-        if (mBottomView != null) ((View) mBottomView).setVisibility(showBottom ? VISIBLE : GONE);
-        if (mFooterView != null) ((View) mFooterView).setVisibility(showBottom ? GONE : VISIBLE);
+        if (mBottomView != null) mBottomView.setVisibility(showBottom ? VISIBLE : GONE);
+        if (mFooterView != null) mFooterView.setVisibility(showBottom ? GONE : VISIBLE);
     }
 
     public void setViewHeight(int height) {
@@ -250,6 +321,7 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         boolean intercept = false;
         float   y         = ev.getY();
+        float   x         = ev.getX();
         direction = ev.getAction() == MotionEvent.ACTION_UP || y == mLastY ?
                 SCROLL_NONE : y > mLastY ? SCROLL_UP : SCROLL_DOWN;
         switch (ev.getAction()) {
@@ -270,8 +342,10 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 direction = SCROLL_NONE;
                 break;
         }
+        boolean vertical = Math.abs(y - mLastY) - Math.abs(x - mLastX) > 0;
         mLastY = y;
-        return intercept;
+        mLastX = x;
+        return intercept && vertical;
     }
 
     @Override
@@ -358,8 +432,8 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
             //上拉加载
             if (showBottom) {
                 //显示无更多布局
-                if (mBottomView != null) ((View) mBottomView).setVisibility(VISIBLE);
-                if (mFooterView != null) ((View) mFooterView).setVisibility(GONE);
+                if (mBottomView != null) mBottomView.setVisibility(VISIBLE);
+                if (mFooterView != null) mFooterView.setVisibility(GONE);
                 if (getScrollY() < 0) { //下拉过程中的上拉，无效上拉
                     if (Math.abs(getScrollY()) < effectivePullDownRange) {
                         if (currentState != State.PULL_DOWN)
@@ -369,15 +443,16 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                     if (!pullUpEnable) return;
                     int bHeight = 0;
                     if (mBottomView != null)
-                        bHeight = ((View) mBottomView).getMeasuredHeight();
+                        bHeight = mBottomView.getMeasuredHeight();
                     if (Math.abs(getScrollY()) >= bHeight) return;
                     dy /= computeInterpolationFactor(getScrollY());
                     updateStatus(State.BOTTOM);
                 }
             } else {
                 //显示加载布局
-                if (mBottomView != null) ((View) mBottomView).setVisibility(GONE);
-                if (mFooterView != null) ((View) mFooterView).setVisibility(VISIBLE);
+                if (mFooterView == null) return;
+                if (mBottomView != null) mBottomView.setVisibility(GONE);
+                if (mFooterView != null) mFooterView.setVisibility(VISIBLE);
                 if (getScrollY() < 0) { //下拉过程中的上拉，无效上拉
                     if (Math.abs(getScrollY()) < effectivePullDownRange) {
                         if (currentState != State.PULL_DOWN)
@@ -472,18 +547,18 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 pullDownReset();
                 break;
             case State.PULL_DOWN:
-                if (mHeaderView != null) {
-                    mHeaderView.pullDown();
+                if (mHeaderWrapper != null) {
+                    mHeaderWrapper.pullDown();
                 }
                 break;
             case State.PULL_DOWN_RELEASABLE:
-                if (mHeaderView != null) {
-                    mHeaderView.pullDownReleasable();
+                if (mHeaderWrapper != null) {
+                    mHeaderWrapper.pullDownReleasable();
                 }
                 break;
             case State.PULL_DOWN_RELEASE:
-                if (mHeaderView != null) {
-                    mHeaderView.pullDownRelease();
+                if (mHeaderWrapper != null) {
+                    mHeaderWrapper.pullDownRelease();
                 }
                 if (mRefreshListener != null) {
                     mRefreshListener.onRefresh();
@@ -498,18 +573,18 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 pullUpReset();
                 break;
             case State.PULL_UP:
-                if (mFooterView != null) {
-                    mFooterView.pullUp();
+                if (mFooterWrapper != null) {
+                    mFooterWrapper.pullUp();
                 }
                 break;
             case State.PULL_UP_RELEASABLE:
-                if (mFooterView != null) {
-                    mFooterView.pullUpReleasable();
+                if (mFooterWrapper != null) {
+                    mFooterWrapper.pullUpReleasable();
                 }
                 break;
             case State.PULL_UP_RELEASE:
-                if (mFooterView != null) {
-                    mFooterView.pullUpRelease();
+                if (mFooterWrapper != null) {
+                    mFooterWrapper.pullUpRelease();
                 }
                 if (mRefreshListener != null) {
                     mRefreshListener.onLoadMore();
@@ -517,13 +592,13 @@ public class SimpleRefreshLayout extends ViewGroup implements NestedScrollingPar
                 setEnable(false);
                 break;
             case State.PULL_UP_FINISH:
-                if (mFooterView != null) {
-                    mFooterView.pullUpFinish();
+                if (mFooterWrapper != null) {
+                    mFooterWrapper.pullUpFinish();
                 }
                 break;
             case State.BOTTOM:
-                if (mBottomView != null) {
-                    mBottomView.showBottom();
+                if (mBottomWrapper != null) {
+                    mBottomWrapper.showBottom();
                 }
                 break;
         }
