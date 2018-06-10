@@ -15,7 +15,7 @@
 #### gradle依赖
 
 ```
-compile 'com.dengzq.widget:simplerefreshlayout:0.6.0'
+compile 'com.dengzq.widget:simplerefreshlayout:0.8.0'
 ```
 
 #### 1.布局配置
@@ -176,6 +176,8 @@ mSimpleRefreshLayout.setEffectivePullDownRange(int val);
 ```
 
 ### 版本更新
+* v0.8.0:</br>bug fix;
+
 * v0.6.0:</br>增加对coordinatorLayout的适配；</br>修复部分已知问题；
 
 * v0.5.0:</br>初始提交；
